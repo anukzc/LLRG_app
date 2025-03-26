@@ -91,6 +91,9 @@ def plot(df):
 
 # main method
 if __name__ == '__main__':
+
+    st.title(body="Welcome to the LLRG plotter!")
+    
     uploaded_file = st.file_uploader(label="Choose the file with the data you want to plot:", type="xlsx")
     
     if uploaded_file is not None:
