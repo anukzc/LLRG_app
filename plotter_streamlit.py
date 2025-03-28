@@ -2,6 +2,7 @@
 # This script uses the processed excel file and generates scatter plots
 # For Jordan Sandoval and Kirsten Drickey's Spanish Language Learning Research
 
+import io
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
@@ -53,16 +54,28 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df):
 
     ax.set_xlabel(x_question.split(":")[1].strip())
     ax.set_ylabel(y_question.split(":")[1].strip())
-    ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+    title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
     st.pyplot(fig)
 
+    # buf = io.BytesIO()
+    # fig.savefig(buf, format="png")
+    # buf.seek(0)
+
+    st.download_button(label="Download Plot", data=fig.savefig(str(title)+".png"), file_name=title+".png")
+   
 def plot_without_differentiation(x_data, y_data):
     fig, ax = plt.subplots()
     ax.scatter(x_data, y_data, alpha=0.1)
     ax.set_xlabel(x_question.split(":")[1].strip())
     ax.set_ylabel(y_question.split(":")[1].strip())
-    ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+    title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
     st.pyplot(fig)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+
+    st.download_button(label="Download Plot", data=buf, file_name=title+".png")
 
 # main function that produces the final pltos
 def plot(df):
@@ -87,13 +100,13 @@ def plot(df):
         plot_for_differentiating_experimental_control(x_data, y_data, df)
     else:
         plot_without_differentiation(x_data, y_data)
-
+    
 
 # main method
 if __name__ == '__main__':
 
     st.title(body="Welcome to the LLRG plotter!")
-    
+
     uploaded_file = st.file_uploader(label="Choose the file with the data you want to plot:", type="xlsx")
     
     if uploaded_file is not None:
