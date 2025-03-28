@@ -39,7 +39,7 @@ def jitter(x_data, y_data):
     return x_jitter, y_jitter
 
 # function that creates the plot with different shapes and colors for the experiemntal and control groups
-def plot_for_differentiating_experimental_control(x_data, y_data, df):
+def plot_for_differentiating_experimental_control(x_data, y_data, df, transparency = 0.3):
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers
     # are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
@@ -49,10 +49,10 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df):
     for key in key_list:
         # for students not in the experimental group
         if df['Experimental Group'][key] == '0':
-            ax.plot(x_data[key], y_data[key], alpha=0.33, marker='s', c='orange', linestyle='none') 
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker='s', c='orange', linestyle='none') 
         # for students in the experimental group
         elif df['Experimental Group'][key] == '1':
-            ax.plot(x_data[key], y_data[key], alpha=0.33, marker='*', c='blue', linestyle='none')
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker='*', c='blue', linestyle='none')
         # skips points where the experimental group is not 1 or 0 just incase
         else:
             continue
@@ -78,9 +78,9 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df):
     st.download_button(label="Download Plot", data=buf, file_name=filename+".png")
    
 # function to create a plot where are the dots are the same color and shape regardless of experimental or control group
-def plot_without_differentiation(x_data, y_data):
+def plot_without_differentiation(x_data, y_data, transparency = 0.1):
     fig, ax = plt.subplots()
-    ax.scatter(x_data, y_data, alpha=0.1)
+    ax.scatter(x_data, y_data, alpha=transparency)
 
     # same as above
     ax.set_xlabel(x_question.split(":")[1].strip())
@@ -94,7 +94,7 @@ def plot_without_differentiation(x_data, y_data):
 
     title = str(title).split("'")[1]
     filename = title.replace(" ", "_")
-    
+
     st.download_button(label="Download Plot", data=buf, file_name=filename+".png")
    
 # main function that produces the final pltos
@@ -116,12 +116,18 @@ def plot(df):
     # transparency?
 
     # if differentiating b/w experimental and control is Yes, we use that plotting function
-    if diff_select == "Yes":
+    # if the advanced settings are toggled on, we pass in those extra parameters
+    if diff_select == "Yes" and advanced:
+        plot_for_differentiating_experimental_control(x_data, y_data, df, transparency)
+    elif diff_select == "Yes" and not advanced:
         plot_for_differentiating_experimental_control(x_data, y_data, df)
 
-    # if it is No, we use the other plotting function
+    # if differentiating b/w experimental and control is No, we use the other plotting function
+    elif diff_select == "No" and advanced:
+        plot_without_differentiation(x_data, y_data, transparency)
     else:
         plot_without_differentiation(x_data, y_data)
+
     
 
 # main method
@@ -145,6 +151,14 @@ if __name__ == '__main__':
         # displays two drop down menus for selecting jitter and differentiating between experimental and control
         jitter_select = st.selectbox(label="Select if you want jitter in your plot:", options=["Yes", "No"], index=0)
         diff_select = st.selectbox(label="Select if you want to differentiate between experimental and control:", options=["Yes", "No"], index=0)
+
+        # displays a toggle to open the advanced settings options
+        advanced = st.toggle(label="Advanced Settings")
+
+        # if the toggle is on, it displays the following drop down menus:
+        if advanced:
+            transparency_options = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+            transparency = st.selectbox(label="Select the transparency level for the dots:", options=transparency_options, index=0)
 
         # displays a button that, when clicked, will display the specified plot
         if st.button(label="Show Plot"):
