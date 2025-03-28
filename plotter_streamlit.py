@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# function that cleans the data by smushing it into two fully filled columns of each response to one question category and each response to the other category
+# function that cleans the data by smushing it into two fully filled columns of each response to one question category and 
+# each response to the other category
 def clean_data(df):
     # takes all responses from the two categories, makes sure they are all numeric values, turns then to NaNs if not
     category_x = df.filter(like=x_question.split(":")[0]).apply(pd.to_numeric, errors="coerce")
@@ -37,11 +38,15 @@ def jitter(x_data, y_data):
 
     return x_jitter, y_jitter
 
+# function that creates the plot with different shapes and colors for the experiemntal and control groups
 def plot_for_differentiating_experimental_control(x_data, y_data, df):
+    # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers
+    # are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
     fig, ax = plt.subplots()
+
+    # loops through all of the valid entries, using the keys
     for key in key_list:
-        # breakpoint()
         # for students not in the experimental group
         if df['Experimental Group'][key] == '0':
             ax.plot(x_data[key], y_data[key], alpha=0.33, marker='s', c='orange', linestyle='none') 
@@ -52,31 +57,46 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df):
         else:
             continue
 
+    # gets the labels of the axes and title by taking the drop down menu input and taking the second element, 
+    # which is the words rather than the Q#
     ax.set_xlabel(x_question.split(":")[1].strip())
     ax.set_ylabel(y_question.split(":")[1].strip())
     title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
-    st.pyplot(fig)
+    st.pyplot(fig) # displays the plot in streamlit
 
-    # buf = io.BytesIO()
-    # fig.savefig(buf, format="png")
-    # buf.seek(0)
-
-    st.download_button(label="Download Plot", data=fig.savefig(str(title)+".png"), file_name=title+".png")
-   
-def plot_without_differentiation(x_data, y_data):
-    fig, ax = plt.subplots()
-    ax.scatter(x_data, y_data, alpha=0.1)
-    ax.set_xlabel(x_question.split(":")[1].strip())
-    ax.set_ylabel(y_question.split(":")[1].strip())
-    title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
-    st.pyplot(fig)
-
+    # this saves the plot in RAM as a stepping stone to saving it to files
     buf = io.BytesIO()
     fig.savefig(buf, format="png")
     buf.seek(0)
 
-    st.download_button(label="Download Plot", data=buf, file_name=title+".png")
+    # the title variable from ax.set_title has a weird format, and the part we care about is in between single quotes, so we split it at
+    # those single quotes and grab the stuff in between them
+    title = str(title).split("'")[1]
+    filename = title.replace(" ", "_") # then replace spaces with underscores
 
+    # creates a download button with the RAM version of the file and the name and saves it to files as a png
+    st.download_button(label="Download Plot", data=buf, file_name=filename+".png")
+   
+# function to create a plot where are the dots are the same color and shape regardless of experimental or control group
+def plot_without_differentiation(x_data, y_data):
+    fig, ax = plt.subplots()
+    ax.scatter(x_data, y_data, alpha=0.1)
+
+    # same as above
+    ax.set_xlabel(x_question.split(":")[1].strip())
+    ax.set_ylabel(y_question.split(":")[1].strip())
+    title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+    st.pyplot(fig)
+    
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+
+    title = str(title).split("'")[1]
+    filename = title.replace(" ", "_")
+    
+    st.download_button(label="Download Plot", data=buf, file_name=filename+".png")
+   
 # main function that produces the final pltos
 def plot(df):
     # get the clean data
@@ -89,15 +109,17 @@ def plot(df):
     x_data = df[x_question.split(":")[0] + ' response']
     y_data = df[y_question.split(":")[0] + ' response']
 
-    # jitter 
+    # if jitter is Yes, then we replace our data with the jittered version
     if jitter_select == "Yes":
         x_data, y_data = jitter(x_data, y_data)
 
     # transparency?
 
-    # differentiating b/w experimental and control
+    # if differentiating b/w experimental and control is Yes, we use that plotting function
     if diff_select == "Yes":
         plot_for_differentiating_experimental_control(x_data, y_data, df)
+
+    # if it is No, we use the other plotting function
     else:
         plot_without_differentiation(x_data, y_data)
     
@@ -107,18 +129,23 @@ if __name__ == '__main__':
 
     st.title(body="Welcome to the LLRG plotter!")
 
+    # creates the upload file widget
     uploaded_file = st.file_uploader(label="Choose the file with the data you want to plot:", type="xlsx")
     
+    # once a file is selected, the rest of the elements are displayed
     if uploaded_file is not None:
         df = pd.read_excel(uploaded_file)
 
         question_options = ["Q4: Anxiety", "Q5: Attitudes", "Q6: Classroom Environment", "Q7: Confidence", "Q8: Independent Practice", "Q9: Measures of Student Success", "Q10: Motivation", "Q11: Departmental Measures of Success"]
 
+        # displays two drop down menus for the x and y axes
         x_question = st.selectbox(label="Select the category to be displayed on the x axis:", options=question_options, index=0)
         y_question = st.selectbox(label="Select the category to be displayed on the y axis:", options=question_options, index=0)
 
+        # displays two drop down menus for selecting jitter and differentiating between experimental and control
         jitter_select = st.selectbox(label="Select if you want jitter in your plot:", options=["Yes", "No"], index=0)
         diff_select = st.selectbox(label="Select if you want to differentiate between experimental and control:", options=["Yes", "No"], index=0)
 
-        if st.button(label="Plot"):
+        # displays a button that, when clicked, will display the specified plot
+        if st.button(label="Show Plot"):
             plot(df)
