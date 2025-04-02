@@ -16,11 +16,11 @@ def clean_data(df):
     category_y = df.filter(like=y_question.split(":")[0]).apply(pd.to_numeric, errors="coerce")
 
     # takes the first number per row for the whole category of the specified questions and puts them all into a single column
-    df[x_question.split(":")[0] + ' response'] = category_x.stack().groupby(level=0).first()
-    df[y_question.split(":")[0] + ' response'] = category_y.stack().groupby(level=0).first()
+    df[x_question.split(":")[0]] = category_x.stack().groupby(level=0).first()
+    df[y_question.split(":")[0]] = category_y.stack().groupby(level=0).first()
 
     # removes NaNs
-    df_clean = df.dropna(subset=[x_question.split(":")[0] + ' response', y_question.split(":")[0] + ' response'])
+    df_clean = df.dropna(subset=[x_question.split(":")[0], y_question.split(":")[0]])
 
     # returns the clean data
     return df_clean
@@ -32,14 +32,14 @@ def format_plot():
     plt.ylim(0.5, 7.5)
     
 # function to add jitter if the user specifies that they want jitter
-def jitter(x_data, y_data):
-    x_jitter = x_data + np.random.uniform(-0.1, 0.1, len(x_data))
-    y_jitter = y_data + np.random.uniform(-0.1, 0.1, len(y_data))
+def add_jitter(x_data, y_data, jitter_val=0.1):
+    x_jitter = x_data + np.random.uniform(-jitter_val, jitter_val, len(x_data))
+    y_jitter = y_data + np.random.uniform(-jitter_val, jitter_val, len(y_data))
 
     return x_jitter, y_jitter
 
 # function that creates the plot with different shapes and colors for the experiemntal and control groups
-def plot_for_differentiating_experimental_control(x_data, y_data, df, transparency = 0.3):
+def plot_for_differentiating_experimental_control(x_data, y_data, df, transparency=0.3, experimental_color='blue', control_color='orange', experimental_shape='*', control_shape='s'):
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers
     # are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
@@ -49,16 +49,17 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     for key in key_list:
         # for students not in the experimental group
         if df['Experimental Group'][key] == '0':
-            ax.plot(x_data[key], y_data[key], alpha=transparency, marker='s', c='orange', linestyle='none') 
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker=control_shape, c=control_color, linestyle='none') 
         # for students in the experimental group
         elif df['Experimental Group'][key] == '1':
-            ax.plot(x_data[key], y_data[key], alpha=transparency, marker='*', c='blue', linestyle='none')
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker=experimental_shape, c=experimental_color, linestyle='none')
         # skips points where the experimental group is not 1 or 0 just incase
         else:
             continue
 
     # gets the labels of the axes and title by taking the drop down menu input and taking the second element, 
     # which is the words rather than the Q#
+    # ax.legend(["Control", "Experimental"])
     ax.set_xlabel(x_question.split(":")[1].strip())
     ax.set_ylabel(y_question.split(":")[1].strip())
     title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
@@ -106,19 +107,21 @@ def plot(df):
     format_plot()
 
     # get the data for the x axis and y axis
-    x_data = df[x_question.split(":")[0] + ' response']
-    y_data = df[y_question.split(":")[0] + ' response']
+    x_data = df[x_question.split(":")[0]]
+    y_data = df[y_question.split(":")[0]]
 
     # if jitter is Yes, then we replace our data with the jittered version
+    # if the advanced settings are turned on, then we use the user selected jitter value
     if jitter_select == "Yes":
-        x_data, y_data = jitter(x_data, y_data)
-
-    # transparency?
+        if advanced:
+            x_data, y_data = add_jitter(x_data, y_data, jitter)
+        else:
+            x_data, y_data = add_jitter(x_data, y_data)
 
     # if differentiating b/w experimental and control is Yes, we use that plotting function
     # if the advanced settings are toggled on, we pass in those extra parameters
     if diff_select == "Yes" and advanced:
-        plot_for_differentiating_experimental_control(x_data, y_data, df, transparency)
+        plot_for_differentiating_experimental_control(x_data, y_data, df, transparency, experimental_color, control_color, experimental_shape, control_shape)
     elif diff_select == "Yes" and not advanced:
         plot_for_differentiating_experimental_control(x_data, y_data, df)
 
@@ -145,12 +148,12 @@ if __name__ == '__main__':
         question_options = ["Q4: Anxiety", "Q5: Attitudes", "Q6: Classroom Environment", "Q7: Confidence", "Q8: Independent Practice", "Q9: Measures of Student Success", "Q10: Motivation", "Q11: Departmental Measures of Success"]
 
         # displays two drop down menus for the x and y axes
-        x_question = st.selectbox(label="Select the category to be displayed on the x axis:", options=question_options, index=0)
-        y_question = st.selectbox(label="Select the category to be displayed on the y axis:", options=question_options, index=0)
+        x_question = st.selectbox(label="Select the category to be displayed on the **x axis**:", options=question_options, index=0)
+        y_question = st.selectbox(label="Select the category to be displayed on the **y axis**:", options=question_options, index=0)
 
         # displays two drop down menus for selecting jitter and differentiating between experimental and control
-        jitter_select = st.selectbox(label="Select if you want jitter in your plot:", options=["Yes", "No"], index=0)
-        diff_select = st.selectbox(label="Select if you want to differentiate between experimental and control:", options=["Yes", "No"], index=0)
+        jitter_select = st.selectbox(label="Select if you want **jitter** in your plot:", options=["Yes", "No"], index=0)
+        diff_select = st.selectbox(label="Select if you want to differentiate between **experimental and control**:", options=["Yes", "No"], index=0)
 
         # displays a toggle to open the advanced settings options
         advanced = st.toggle(label="Advanced Settings")
@@ -158,7 +161,20 @@ if __name__ == '__main__':
         # if the toggle is on, it displays the following drop down menus:
         if advanced:
             transparency_options = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-            transparency = st.selectbox(label="Select the transparency level for the dots:", options=transparency_options, index=0)
+            transparency = st.selectbox(label="Select the **transparency** level for the dots:", options=transparency_options, index=1)
+            jitter_options = [0.05, 0.10, 0.15, 0.20]
+            jitter = st.selectbox(label="Select the amount of **jitter** you want in your plot:", options=jitter_options, index=1)
+
+            if diff_select == "Yes":
+                color_options = ['red', 'orange', 'yellow', 'green', 'lime', 'blue', 'cyan', 'purple', 'magenta']
+                experimental_color = st.selectbox(label="Select the **color** for the **experimental** group:", options=color_options, index=5)
+                control_color = st.selectbox(label="Select the **color** for the **control** group:", options=color_options, index=1)
+                shape_options = ['square', 'star', 'dot', 'triangle', 'plus']
+                shape_options_dictionary = {'square': 's', 'star': '*', 'dot': 'o', 'triangle': '^', 'plus':'+'}
+                experimental_select = st.selectbox(label="Select the **shape** for the **experimental** group:", options=shape_options, index=1)
+                experimental_shape = shape_options_dictionary[experimental_select]
+                control_select = st.selectbox(label="Select the **shape** for the **control** group:", options=shape_options, index=0)
+                control_shape = shape_options_dictionary[control_select]
 
         # displays a button that, when clicked, will display the specified plot
         if st.button(label="Show Plot"):
