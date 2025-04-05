@@ -76,7 +76,7 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     filename = title.replace(" ", "_") # then replace spaces with underscores
 
     # creates a download button with the RAM version of the file and the name and saves it to files as a png
-    st.download_button(label="Download Plot", data=buf, file_name=filename+".png")
+    st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
    
 # function to create a plot where are the dots are the same color and shape regardless of experimental or control group
 def plot_without_differentiation(x_data, y_data, transparency = 0.1):
@@ -96,7 +96,7 @@ def plot_without_differentiation(x_data, y_data, transparency = 0.1):
     title = str(title).split("'")[1]
     filename = title.replace(" ", "_")
 
-    st.download_button(label="Download Plot", data=buf, file_name=filename+".png")
+    st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
    
 # main function that produces the final pltos
 def plot(df):
