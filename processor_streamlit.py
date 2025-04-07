@@ -125,7 +125,7 @@ if __name__=="__main__" :
         # put the data into excel format without actually saving it to your files
         output_file = io.BytesIO()
         writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
-        data.to_excel(writer)
+        data.to_excel(writer, index=False)
         writer.close()
         output_file.seek(0)
 
