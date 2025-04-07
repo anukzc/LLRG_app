@@ -4,7 +4,7 @@ processor = st.Page("processor_streamlit.py", title="Data Processor", icon=":mat
 plotter = st.Page("plotter_streamlit.py", title="Plotter", icon=":material/line_axis:") #table_chart_view #line_axis #bar_chart_4_bars
 merger = st.Page("excel_merger.py", title="Merger", icon=":material/arrow_and_edge:") #arrow_and_edge
 
-pg = st.navigation([processor, plotter])
+pg = st.navigation([processor, plotter, merger])
 st.set_page_config(page_title="LLRG App", page_icon=":material/edit:")
 
 pg.run()
