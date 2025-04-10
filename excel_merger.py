@@ -24,6 +24,11 @@ if __name__ == '__main__':
         # prevents the boolean True and False values in the Finished columns from becoming all caps
         df_merged['Finished'] = df_merged['Finished'].astype(str)
 
+        # add the option to toggle on sorting by W number
+        sort = st.toggle(label="Sort by W number")
+        if sort:
+            df_merged = df_merged.sort_values(by=["Q2.1", "StartDate"], ascending=True)
+
         # put the data into excel format without actually saving it to your files
         output_file = io.BytesIO()
         with pd.ExcelWriter(output_file, engine='xlsxwriter') as writer:
