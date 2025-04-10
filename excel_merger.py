@@ -12,9 +12,9 @@ if __name__ == '__main__':
 
     if main_file is not None and new_data is not None:
         # header=None makes the file not require the header row to be present, skiprows=2 skips the first two rows which are the headers
-        df_new = pd.read_excel(new_data.name, header=None, skiprows=2)
+        df_new = pd.read_excel(new_data, header=None, skiprows=2)
 
-        df_main = pd.read_excel(main_file.name)
+        df_main = pd.read_excel(main_file)
 
         # assignes the columns of the new file to be the columns of the main file since we stripped the headers
         df_new.columns = df_main.columns
