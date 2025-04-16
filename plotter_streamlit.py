@@ -78,6 +78,95 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     # creates a download button with the RAM version of the file and the name and saves it to files as a png
     st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
    
+# function that creates the plot with different shapes and colors for the upper and lower division students
+def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, upper_color='lime', lower_color='magenta', upper_shape='^', lower_shape='o'):
+    # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers
+    # are skipped, so it is a dictionary rather than a list
+    key_list = x_data.keys()
+    fig, ax = plt.subplots()
+
+    # loops through all of the valid entries, using the keys
+    for key in key_list:
+        # for lower division students
+        if df['Division'][key] == 0:
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=lower_color, linestyle='none') 
+        # for upper division students
+        elif df['Division'][key] == 1:
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker=upper_shape, c=upper_color, linestyle='none')
+        # skips points where the Division value is not 1 or 0 just incase
+        else:
+            continue
+
+    # gets the labels of the axes and title by taking the drop down menu input and taking the second element, 
+    # which is the words rather than the Q#
+    ax.set_xlabel(x_question.split(":")[1].strip())
+    ax.set_ylabel(y_question.split(":")[1].strip())
+    title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+    st.pyplot(fig) # displays the plot in streamlit
+
+    # this saves the plot in RAM as a stepping stone to saving it to files
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+
+    # the title variable from ax.set_title has a weird format, and the part we care about is in between single quotes, so we split it at
+    # those single quotes and grab the stuff in between them
+    title = str(title).split("'")[1]
+    filename = title.replace(" ", "_") # then replace spaces with underscores
+
+    # creates a download button with the RAM version of the file and the name and saves it to files as a png
+    st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
+   
+# function that creates a plot with different colors for experimental and control and different shapes for upper and lower division
+def plot_for_differentiating_both(x_data, y_data, df, transparency=0.3, experimental_color='blue', control_color='orange', upper_shape='^', lower_shape='o'):
+    # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers
+    # are skipped, so it is a dictionary rather than a list
+    key_list = x_data.keys()
+    fig, ax = plt.subplots()
+
+    # loops through all of the valid entries, using the keys
+    for key in key_list:
+        # for students not in the experimental group
+        if df['Experimental Group'][key] == '0':
+            if df['Division'][key] == 0:
+                ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=control_color, linestyle='none')
+            elif df['Division'][key] == 1:
+                ax.plot(x_data[key], y_data[key], alpha=transparency, marker=upper_shape, c=control_color, linestyle='none')
+            else:
+                continue
+        # for students in the experimental group
+        elif df['Experimental Group'][key] == '1':
+            if df['Division'][key] == 0:
+                ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=experimental_color, linestyle='none')
+            elif df['Division'][key] == 1:
+                ax.plot(x_data[key], y_data[key], alpha=transparency, marker=upper_shape, c=experimental_color, linestyle='none')
+            else:
+                continue        # skips points where the experimental group is not 1 or 0 just incase
+        else:
+            continue
+
+    # gets the labels of the axes and title by taking the drop down menu input and taking the second element, 
+    # which is the words rather than the Q#
+    # ax.legend(["Control", "Experimental"])
+    ax.set_xlabel(x_question.split(":")[1].strip())
+    ax.set_ylabel(y_question.split(":")[1].strip())
+    title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+    st.pyplot(fig) # displays the plot in streamlit
+
+    # this saves the plot in RAM as a stepping stone to saving it to files
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+
+    # the title variable from ax.set_title has a weird format, and the part we care about is in between single quotes, so we split it at
+    # those single quotes and grab the stuff in between them
+    title = str(title).split("'")[1]
+    filename = title.replace(" ", "_") # then replace spaces with underscores
+
+    # creates a download button with the RAM version of the file and the name and saves it to files as a png
+    st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
+   
+
 # function to create a plot where are the dots are the same color and shape regardless of experimental or control group
 def plot_without_differentiation(x_data, y_data, transparency = 0.1):
     fig, ax = plt.subplots()
@@ -103,9 +192,6 @@ def plot(df):
     # get the clean data
     df = clean_data(df)
 
-    # format the axes for the plot
-    format_plot()
-
     # get the data for the x axis and y axis
     x_data = df[x_question.split(":")[0]]
     y_data = df[y_question.split(":")[0]]
@@ -118,18 +204,43 @@ def plot(df):
         else:
             x_data, y_data = add_jitter(x_data, y_data)
 
-    # if differentiating b/w experimental and control is Yes, we use that plotting function
-    # if the advanced settings are toggled on, we pass in those extra parameters
-    if diff_select == "Yes" and advanced:
-        plot_for_differentiating_experimental_control(x_data, y_data, df, transparency, experimental_color, control_color, experimental_shape, control_shape)
-    elif diff_select == "Yes" and not advanced:
-        plot_for_differentiating_experimental_control(x_data, y_data, df)
+    # if differentiating b/w experimental and control is Yes
+    if diff_select == "Yes":
+        # if differentiating b/w division is Yes
+        if division_select == "Yes":
+            # if advanced settings are on
+            if advanced:
+                plot_for_differentiating_both(x_data, y_data, df, transparency, experimental_color, control_color, upper_shape, lower_shape)
 
-    # if differentiating b/w experimental and control is No, we use the other plotting function
-    elif diff_select == "No" and advanced:
-        plot_without_differentiation(x_data, y_data, transparency)
+            # if advanced settings are off
+            else:
+                plot_for_differentiating_both(x_data, y_data, df)
+            
+        # if differentiation between division is No
+        else:
+            if advanced:
+                plot_for_differentiating_experimental_control(x_data, y_data, df, transparency, experimental_color, control_color, experimental_shape, control_shape)
+            else:
+                plot_for_differentiating_experimental_control(x_data, y_data, df)
+
+    # if differentiating b/w experimental and control is No
     else:
-        plot_without_differentiation(x_data, y_data)
+        if division_select == "Yes": 
+            if advanced:
+                plot_for_differentiating_division(x_data, y_data, df, transparency, upper_color, lower_color, upper_shape, lower_shape)
+            else:
+                plot_for_differentiating_division(x_data, y_data, df)
+
+        # if both are No
+        else:
+            if advanced:
+                plot_without_differentiation(x_data, y_data, transparency)
+            else:
+                plot_without_differentiation(x_data, y_data)
+    
+    
+    # format the axes for the plot
+    format_plot()
 
     
 
@@ -154,6 +265,8 @@ if __name__ == '__main__':
         # displays two drop down menus for selecting jitter and differentiating between experimental and control
         jitter_select = st.selectbox(label="Select if you want **jitter** in your plot:", options=["Yes", "No"], index=0)
         diff_select = st.selectbox(label="Select if you want to differentiate between **experimental and control**:", options=["Yes", "No"], index=0)
+        division_select = st.selectbox(label="Select if you want to differentiate between **upper and lower division**:", options=["Yes", "No"], index=0)
+
 
         # displays a toggle to open the advanced settings options
         advanced = st.toggle(label="Advanced Settings")
@@ -165,7 +278,18 @@ if __name__ == '__main__':
             jitter_options = [0.05, 0.10, 0.15, 0.20]
             jitter = st.selectbox(label="Select the amount of **jitter** you want in your plot:", options=jitter_options, index=1)
 
-            if diff_select == "Yes":
+            if diff_select == "Yes" and division_select == "Yes":
+                color_options = ['red', 'orange', 'yellow', 'green', 'lime', 'blue', 'cyan', 'purple', 'magenta']
+                experimental_color = st.selectbox(label="Select the **color** for the **experimental** group:", options=color_options, index=5)
+                control_color = st.selectbox(label="Select the **color** for the **control** group:", options=color_options, index=1)
+                shape_options = ['square', 'star', 'dot', 'triangle', 'plus']
+                shape_options_dictionary = {'square': 's', 'star': '*', 'dot': 'o', 'triangle': '^', 'plus':'+'}
+                upper_select = st.selectbox(label="Select the **shape** for the **upper division** students:", options=shape_options, index=3)
+                upper_shape = shape_options_dictionary[upper_select]
+                lower_select = st.selectbox(label="Select the **shape** for the **lower division** students:", options=shape_options, index=2)
+                lower_shape = shape_options_dictionary[lower_select]
+
+            elif diff_select == "Yes":
                 color_options = ['red', 'orange', 'yellow', 'green', 'lime', 'blue', 'cyan', 'purple', 'magenta']
                 experimental_color = st.selectbox(label="Select the **color** for the **experimental** group:", options=color_options, index=5)
                 control_color = st.selectbox(label="Select the **color** for the **control** group:", options=color_options, index=1)
@@ -175,6 +299,17 @@ if __name__ == '__main__':
                 experimental_shape = shape_options_dictionary[experimental_select]
                 control_select = st.selectbox(label="Select the **shape** for the **control** group:", options=shape_options, index=0)
                 control_shape = shape_options_dictionary[control_select]
+
+            elif division_select == "Yes":
+                color_options = ['red', 'orange', 'yellow', 'green', 'lime', 'blue', 'cyan', 'purple', 'magenta']
+                upper_color = st.selectbox(label="Select the **color** for the **upper division** students:", options=color_options, index=4)
+                lower_color = st.selectbox(label="Select the **color** for the **lower division** students:", options=color_options, index=8)
+                shape_options = ['square', 'star', 'dot', 'triangle', 'plus']
+                shape_options_dictionary = {'square': 's', 'star': '*', 'dot': 'o', 'triangle': '^', 'plus':'+'}
+                upper_select = st.selectbox(label="Select the **shape** for the **upper division** students:", options=shape_options, index=3)
+                upper_shape = shape_options_dictionary[upper_select]
+                lower_select = st.selectbox(label="Select the **shape** for the **lower division** students:", options=shape_options, index=2)
+                lower_shape = shape_options_dictionary[lower_select]
 
         # displays a button that, when clicked, will display the specified plot
         if st.button(label="Show Plot"):
