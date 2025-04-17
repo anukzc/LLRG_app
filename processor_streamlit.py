@@ -35,11 +35,13 @@ def add_W(data, col) :
             data.at[cell, col] = "W" + num[1:]
     return data
 
-# function that adds
+# function that gets upper and lower division values for each students
 def add_upper_lower_division(data, division_vals) :
     for cell in data['Q3.1'].fillna(''):
         if ('30' in cell) or ('31' in cell) or ('33' in cell) or ('34' in cell) or ('35' in cell) or ('44' in cell) or ('45' in cell):
             division = 1
+        elif cell[0].isdigit() == False:
+            division = ''
         else :
             division = 0
         division_vals.append(division)
@@ -83,6 +85,7 @@ if __name__=="__main__" :
         # adds a column at the end of the excel file with a 1 if the student is upper division and a 0 if they are lower division
         division_vals = []
         data["Division"] = add_upper_lower_division(data, division_vals)
+        data["Times Taken"] = ''
 
         # changing likert scale values to numbers
         likert_cols = ["Q4.1", "Q4.2", "Q4.3", "Q4.4", "Q4.5", "Q4.6", "Q4.7", "Q5.1", "Q5.2", "Q5.3", 

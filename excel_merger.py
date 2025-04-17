@@ -3,6 +3,27 @@ import io
 import pandas as pd
 import streamlit as st
 
+def get_times_taken(df):
+    seen_wnums_counts = {}
+    cell_vals = []
+    for idx, row in df.iterrows():
+        if idx == 0:
+            cell = ''
+        else:
+            wnum = row['Q2.1']
+            cell = row['Times Taken']
+            if pd.isna(wnum):
+                cell = 1
+            elif wnum not in seen_wnums_counts.keys():
+                cell = 1
+                seen_wnums_counts[wnum] = 1
+            elif wnum in seen_wnums_counts.keys():
+                cell = seen_wnums_counts[wnum] + 1
+                seen_wnums_counts[wnum] = seen_wnums_counts[wnum] + 1
+        cell_vals.append(cell)
+    return cell_vals
+            
+
 if __name__ == '__main__':
 
     st.title(body="Welcome to the LLRG merger!")
@@ -28,6 +49,9 @@ if __name__ == '__main__':
         sort = st.toggle(label="Sort by W number")
         if sort:
             df_merged = df_merged.sort_values(by=["Q2.1", "StartDate"], ascending=True)
+
+        df_merged['Times Taken'] = get_times_taken(df_merged)
+
 
         # put the data into excel format without actually saving it to your files
         output_file = io.BytesIO()
