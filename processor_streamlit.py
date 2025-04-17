@@ -40,6 +40,8 @@ def add_upper_lower_division(data, division_vals) :
     for cell in data['Q3.1'].fillna(''):
         if ('30' in cell) or ('31' in cell) or ('33' in cell) or ('34' in cell) or ('35' in cell) or ('44' in cell) or ('45' in cell):
             division = 1
+        elif cell == '':
+            division = 0
         elif cell[0].isdigit() == False:
             division = ''
         else :

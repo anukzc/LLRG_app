@@ -46,7 +46,7 @@ if __name__ == '__main__':
         df_merged['Finished'] = df_merged['Finished'].astype(str)
 
         # add the option to toggle on sorting by W number
-        sort = st.toggle(label="Sort by W number")
+        sort = st.toggle(label="Sort by W number", value=True)
         if sort:
             df_merged = df_merged.sort_values(by=["Q2.1", "StartDate"], ascending=True)
 
