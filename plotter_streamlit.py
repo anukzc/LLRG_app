@@ -45,14 +45,22 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     key_list = x_data.keys()
     fig, ax = plt.subplots()
 
+    experimental_x = []
+    experimental_y = []
+    control_x = []
+    control_y = []
     # loops through all of the valid entries, using the keys
     for key in key_list:
         # for students not in the experimental group
         if df['Experimental Group'][key] == '0':
             ax.plot(x_data[key], y_data[key], alpha=transparency, marker=control_shape, c=control_color, linestyle='none') 
+            control_x.append(x_data[key])
+            control_y.append(y_data[key])
         # for students in the experimental group
         elif df['Experimental Group'][key] == '1':
             ax.plot(x_data[key], y_data[key], alpha=transparency, marker=experimental_shape, c=experimental_color, linestyle='none')
+            experimental_x.append(x_data[key])
+            experimental_y.append(y_data[key])
         # skips points where the experimental group is not 1 or 0 just incase
         else:
             continue
@@ -63,6 +71,17 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     ax.set_xlabel(x_question.split(":")[1].strip())
     ax.set_ylabel(y_question.split(":")[1].strip())
     title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+    
+    if exp_best_fit_line:
+        exp_m, exp_b = np.polyfit(experimental_x, experimental_y, 1)
+        x_fit = np.linspace(min(x_data), max(x_data), 100)
+        ax.plot(x_fit, exp_m*x_fit+exp_b, color=experimental_color)
+
+    if control_best_fit_line:
+        control_m, control_b = np.polyfit(control_x, control_y, 1)
+        x_fit = np.linspace(min(x_data), max(x_data), 100)
+        ax.plot(x_fit, control_m*x_fit+control_b, color=control_color)
+
     st.pyplot(fig) # displays the plot in streamlit
 
     # this saves the plot in RAM as a stepping stone to saving it to files
@@ -85,14 +104,22 @@ def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, uppe
     key_list = x_data.keys()
     fig, ax = plt.subplots()
 
+    lower_x = []
+    lower_y = []
+    upper_x = []
+    upper_y = []
     # loops through all of the valid entries, using the keys
     for key in key_list:
         # for lower division students
         if df['Division'][key] == 0:
             ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=lower_color, linestyle='none') 
+            lower_x.append(x_data[key])
+            lower_y.append(y_data[key])
         # for upper division students
         elif df['Division'][key] == 1:
             ax.plot(x_data[key], y_data[key], alpha=transparency, marker=upper_shape, c=upper_color, linestyle='none')
+            upper_x.append(x_data[key])
+            upper_y.append(y_data[key])
         # skips points where the Division value is not 1 or 0 just incase
         else:
             continue
@@ -102,6 +129,17 @@ def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, uppe
     ax.set_xlabel(x_question.split(":")[1].strip())
     ax.set_ylabel(y_question.split(":")[1].strip())
     title = ax.set_title(x_question.split(":")[1].strip() + ' vs ' + y_question.split(":")[1].strip())
+
+    if upper_best_fit_line:
+        upper_m, upper_b = np.polyfit(upper_x, upper_x, 1)
+        x_fit = np.linspace(min(x_data), max(x_data), 100)
+        ax.plot(x_fit, upper_m*x_fit+upper_b, color=upper_color)
+
+    if lower_best_fit_line:
+        lower_m, lower_b = np.polyfit(lower_x, lower_y, 1)
+        x_fit = np.linspace(min(x_data), max(x_data), 100)
+        ax.plot(x_fit, lower_m*x_fit+lower_b, color=lower_color)
+
     st.pyplot(fig) # displays the plot in streamlit
 
     # this saves the plot in RAM as a stepping stone to saving it to files
@@ -265,8 +303,15 @@ if __name__ == '__main__':
         # displays two drop down menus for selecting jitter and differentiating between experimental and control
         jitter_select = st.selectbox(label="Select if you want **jitter** in your plot:", options=["Yes", "No"], index=0)
         diff_select = st.selectbox(label="Select if you want to differentiate between **experimental and control**:", options=["Yes", "No"], index=0)
-        division_select = st.selectbox(label="Select if you want to differentiate between **upper and lower division**:", options=["Yes", "No"], index=0)
+        division_select = st.selectbox(label="Select if you want to differentiate between **upper and lower division**:", options=["Yes", "No"], index=1)
 
+        if diff_select == "No" or division_select == "No":
+            if diff_select == "Yes":
+                exp_best_fit_line = st.checkbox(label="Show Best Fit Line for Experimental Group", value=False)
+                control_best_fit_line = st.checkbox(label="Show Best Fit Line for Control Group", value=False)
+            elif division_select == "Yes":
+                upper_best_fit_line = st.checkbox(label="Show Best Fit Line for Upper Division")
+                lower_best_fit_line = st.checkbox(label="Show Best Fit Line for Lower Division")
 
         # displays a toggle to open the advanced settings options
         advanced = st.toggle(label="Advanced Settings")
