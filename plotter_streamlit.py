@@ -40,6 +40,8 @@ def add_jitter(x_data, y_data, jitter_val=0.1):
 
 # function that creates the plot with different shapes and colors for the experiemntal and control groups
 def plot_for_differentiating_experimental_control(x_data, y_data, df, transparency=0.3, experimental_color='blue', control_color='orange', experimental_shape='*', control_shape='s'):
+    global exp_best_fit_line, control_best_fit_line
+    
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
     fig, ax = plt.subplots()
@@ -108,6 +110,8 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
    
 # function that creates the plot with different shapes and colors for the upper and lower division students
 def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, upper_color='lime', lower_color='magenta', upper_shape='^', lower_shape='o'):
+    global upper_best_fit_line, lower_best_fit_line
+    
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
     fig, ax = plt.subplots()
@@ -252,6 +256,8 @@ def plot_without_differentiation(x_data, y_data, transparency = 0.1):
    
 # main function to produce the specific pltos
 def plot(df):
+    global jitter_select, advanced, diff_select, division_select
+
     # get the clean data
     df = clean_data(df)
 
