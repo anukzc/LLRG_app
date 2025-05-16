@@ -332,7 +332,7 @@ if __name__ == '__main__':
         if diff_select == "Yes" and division_select == "No":
             diff_group = st.selectbox(label="Select which groups you would like to plot:", options=["Both", "Experimental Only", "Control Only"])
         if diff_select == "No" and division_select == "Yes":
-            div_group = st.selectbox(label="Select which groups you would like to plot:", options=["Both", "Upper Division Only", "Lower Division"])
+            div_group = st.selectbox(label="Select which groups you would like to plot:", options=["Both", "Upper Division Only", "Lower Division Only"])
 
         # if at least one of them is No, then display checkboxes so the user can select best fit line options
         if diff_select == "No" or division_select == "No":
