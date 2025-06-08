@@ -232,7 +232,7 @@ def plot_for_differentiating_both(x_data, y_data, df, transparency=0.3, experime
     st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
 
 # function to create a plot where are the dots are the same color and shape regardless of experimental or control group
-def plot_without_differentiation(x_data, y_data, transparency = 0.1):
+def plot_without_differentiation(x_data, y_data, transparency = 0.3):
     fig, ax = plt.subplots()
     ax.scatter(x_data, y_data, alpha=transparency)
 
@@ -363,7 +363,7 @@ if __name__ == '__main__':
         # if the toggle is on, it displays additional drop down menus, including transparency and jitter
         if advanced:
             transparency_options = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-            transparency = st.selectbox(label="Select the **transparency** level for the dots:", options=transparency_options, index=1)
+            transparency = st.selectbox(label="Select the **transparency** level for the dots:", options=transparency_options, index=2)
             jitter_options = [0.05, 0.10, 0.15, 0.20]
             jitter = st.selectbox(label="Select the amount of **jitter** you want in your plot:", options=jitter_options, index=1)
 
