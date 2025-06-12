@@ -44,6 +44,12 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
+    print(len(key_list))
+    print(key_list)
+    i = 0
+    j = 0
+    k = 0
+    skip = 0
     fig, ax = plt.subplots()
 
     # initialize lists to store data to then use for plotting the best fit line
@@ -54,15 +60,16 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
 
     # loops through all of the valid entries, using the keys
     for key in key_list:
-        if df['Experimental Group'][key] == '0': # CONTROL GROUP
+        # checks if the number is a string or an int, to make sure the plotter captures all data points
+        if df['Experimental Group'][key] == '0' or df['Experimental Group'][key] == 0: # CONTROL GROUP
             # if the user selected to only plot experimental group, skip plotting these points
             if diff_group == "Experimental Only":
                 continue
-            ax.plot(x_data[key], y_data[key], alpha=transparency, marker=control_shape, c=control_color, linestyle='none') 
+            ax.plot(x_data[key], y_data[key], alpha=transparency, marker=control_shape, c=control_color, linestyle='none')
             # saving data for best fit line
             control_x.append(x_data[key])
             control_y.append(y_data[key])
-        elif df['Experimental Group'][key] == '1': # EXPERIMENTAL GROUP
+        elif df['Experimental Group'][key] == '1' or df['Experimental Group'][key] == 1: # EXPERIMENTAL GROUP
             # if the user selected to only plot control group, skip plotting these points
             if diff_group == "Control Only":
                 continue
@@ -124,14 +131,15 @@ def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, uppe
 
     # loops through all of the valid entries, using the keys
     for key in key_list:
-        if df['Division'][key] == 0: # LOWER DIVISION
+        # checks if the number is a string or an int, to make sure the plotter captures all data points
+        if df['Division'][key] == 0 or df['Division'][key] == '0': # LOWER DIVISION
             # if the user selected to only plot upper division, skips plotting these points
             if div_group == "Upper Division Only":
                 continue
             ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=lower_color, linestyle='none') 
             lower_x.append(x_data[key])
             lower_y.append(y_data[key])
-        elif df['Division'][key] == 1: # UPPER DIVISION
+        elif df['Division'][key] == 1 or df['Division'][key] == '1': # UPPER DIVISION
             # if the user selected to only plot lower division, skips plottin these points
             if div_group == "Lower Division Only":
                 continue
@@ -186,7 +194,8 @@ def plot_for_differentiating_both(x_data, y_data, df, transparency=0.3, experime
     # loops through all of the valid entries, using the keys
     for key in key_list:
         # for students in the control group
-        if df['Experimental Group'][key] == '0':
+        # checks if the number is a string or an int, to make sure the plotter captures all data points
+        if df['Experimental Group'][key] == '0' or df['Experimental Group'][key] == 0:
             # for lower division students
             if df['Division'][key] == 0:
                 ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=control_color, linestyle='none')
@@ -196,7 +205,7 @@ def plot_for_differentiating_both(x_data, y_data, df, transparency=0.3, experime
             else:
                 continue
         # for students in the experimental group
-        elif df['Experimental Group'][key] == '1':
+        elif df['Experimental Group'][key] == '1' or df['Experimental Group'][key] == 1:
             # for lower division students
             if df['Division'][key] == 0:
                 ax.plot(x_data[key], y_data[key], alpha=transparency, marker=lower_shape, c=experimental_color, linestyle='none')
