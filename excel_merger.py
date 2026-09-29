@@ -1,3 +1,6 @@
+# Author: Anuk Centellas
+# This script takes two excel files and appends the new data to the main file
+# For Jordan Sandoval and Kirsten Drickey's Spanish Language Learning Research
 
 import io
 import pandas as pd
@@ -11,13 +14,12 @@ def get_times_taken(df):
             cell = ''
         else:
             wnum = row['Q2.1']
-            cell = row['Times Taken']
             if pd.isna(wnum):
                 cell = 1
-            elif wnum not in seen_wnums_counts.keys():
+            elif wnum not in seen_wnums_counts:
                 cell = 1
                 seen_wnums_counts[wnum] = 1
-            elif wnum in seen_wnums_counts.keys():
+            elif wnum in seen_wnums_counts:
                 cell = seen_wnums_counts[wnum] + 1
                 seen_wnums_counts[wnum] = seen_wnums_counts[wnum] + 1
         cell_vals.append(cell)
@@ -47,8 +49,12 @@ if __name__ == '__main__':
 
         # add the option to toggle on sorting by W number
         sort = st.toggle(label="Sort by W number", value=True)
+
         if sort:
-            df_merged = df_merged.sort_values(by=["Q2.1", "StartDate"], ascending=True)
+            question_row = df_merged.iloc[[0]]   # double brackets keep it as a DataFrame
+            responses = df_merged.iloc[1:].sort_values(by=["Q2.1", "StartDate"], ascending=True)
+            df_merged = pd.concat([question_row, responses])
+
 
         df_merged['Times Taken'] = get_times_taken(df_merged)
 

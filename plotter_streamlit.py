@@ -11,7 +11,7 @@ import streamlit as st
 # function that cleans the data by smushing it into two fully filled columns of each response to one question category and 
 # each response to the other category
 def clean_data(df):
-    # takes all responses from the two categories, makes sure they are all numeric values, turns then to NaNs if not
+    # takes all responses from the two categories, makes sure they are all numeric values, turns them to NaNs if not
     category_x = df.filter(like=x_question.split(":")[0]).apply(pd.to_numeric, errors="coerce")
     category_y = df.filter(like=y_question.split(":")[0]).apply(pd.to_numeric, errors="coerce")
 
@@ -38,18 +38,10 @@ def add_jitter(x_data, y_data, jitter_val=0.1):
 
     return x_jitter, y_jitter
 
-# function that creates the plot with different shapes and colors for the experiemntal and control groups
+# function that creates the plot with different shapes and colors for the experimental and control groups
 def plot_for_differentiating_experimental_control(x_data, y_data, df, transparency=0.3, experimental_color='blue', control_color='orange', experimental_shape='*', control_shape='s'):
-    global exp_best_fit_line, control_best_fit_line
-    
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
-    print(len(key_list))
-    print(key_list)
-    i = 0
-    j = 0
-    k = 0
-    skip = 0
     fig, ax = plt.subplots()
 
     # initialize lists to store data to then use for plotting the best fit line
@@ -88,15 +80,21 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     
     # plots best fit line for experimental group points
     if exp_best_fit_line:
-        exp_m, exp_b = np.polyfit(experimental_x, experimental_y, 1)
-        x_fit = np.linspace(min(x_data), max(x_data), 100)
-        ax.plot(x_fit, exp_m*x_fit+exp_b, color=experimental_color)
+        if len(experimental_x) >= 2:
+            exp_m, exp_b = np.polyfit(experimental_x, experimental_y, 1)
+            x_fit = np.linspace(min(x_data), max(x_data), 100)
+            ax.plot(x_fit, exp_m*x_fit+exp_b, color=experimental_color)
+        else:
+            st.warning("Not enough data points to plot best fit line for experimental group. At least 2 data points are required.")
 
     # plots best fit line for control group points
     if control_best_fit_line:
-        control_m, control_b = np.polyfit(control_x, control_y, 1)
-        x_fit = np.linspace(min(x_data), max(x_data), 100)
-        ax.plot(x_fit, control_m*x_fit+control_b, color=control_color)
+        if len(control_x) >= 2:
+            control_m, control_b = np.polyfit(control_x, control_y, 1)
+            x_fit = np.linspace(min(x_data), max(x_data), 100)
+            ax.plot(x_fit, control_m*x_fit+control_b, color=control_color)
+        else:
+            st.warning("Not enough data points to plot best fit line for control group. At least 2 data points are required.")
 
     format_plot(ax) # format the axes for the plot
 
@@ -107,9 +105,8 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
     fig.savefig(buf, format="png")
     buf.seek(0)
 
-    # the title variable from ax.set_title has a weird format, and the part we care about is in between single quotes, so we split it at
     # those single quotes and grab the stuff in between them
-    title = str(title).split("'")[1]
+    title = title.get_text()
     filename = title.replace(" ", "_") # then replace spaces with underscores for proper file naming
 
     # creates a download button with the RAM version of the file and the name and saves it to files as a png
@@ -117,8 +114,6 @@ def plot_for_differentiating_experimental_control(x_data, y_data, df, transparen
    
 # function that creates the plot with different shapes and colors for the upper and lower division students
 def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, upper_color='lime', lower_color='magenta', upper_shape='^', lower_shape='o'):
-    global upper_best_fit_line, lower_best_fit_line
-    
     # gets the keys of each valid entry in the excel file, since invalid entries were removed, some numbers are skipped, so it is a dictionary rather than a list
     key_list = x_data.keys()
     fig, ax = plt.subplots()
@@ -140,7 +135,7 @@ def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, uppe
             lower_x.append(x_data[key])
             lower_y.append(y_data[key])
         elif df['Division'][key] == 1 or df['Division'][key] == '1': # UPPER DIVISION
-            # if the user selected to only plot lower division, skips plottin these points
+            # if the user selected to only plot lower division, skips plotting these points
             if div_group == "Lower Division Only":
                 continue
             ax.plot(x_data[key], y_data[key], alpha=transparency, marker=upper_shape, c=upper_color, linestyle='none')
@@ -157,15 +152,21 @@ def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, uppe
 
     # plots best fit line for upper division points
     if upper_best_fit_line:
-        upper_m, upper_b = np.polyfit(upper_x, upper_x, 1)
-        x_fit = np.linspace(min(x_data), max(x_data), 100)
-        ax.plot(x_fit, upper_m*x_fit+upper_b, color=upper_color)
+        if len(upper_x) >= 2:
+            upper_m, upper_b = np.polyfit(upper_x, upper_y, 1)
+            x_fit = np.linspace(min(x_data), max(x_data), 100)
+            ax.plot(x_fit, upper_m*x_fit+upper_b, color=upper_color)
+        else:
+            st.warning("Not enough data points to plot best fit line for upper division. At least 2 data points are required.")
 
     # plots best fit line for lower division points
     if lower_best_fit_line:
-        lower_m, lower_b = np.polyfit(lower_x, lower_y, 1)
-        x_fit = np.linspace(min(x_data), max(x_data), 100)
-        ax.plot(x_fit, lower_m*x_fit+lower_b, color=lower_color)
+        if len(lower_x) >= 2:
+            lower_m, lower_b = np.polyfit(lower_x, lower_y, 1)
+            x_fit = np.linspace(min(x_data), max(x_data), 100)
+            ax.plot(x_fit, lower_m*x_fit+lower_b, color=lower_color)
+        else:
+            st.warning("Not enough data points to plot best fit line for lower division. At least 2 data points are required.")
 
     format_plot(ax) # format the axes for the plot
 
@@ -176,9 +177,8 @@ def plot_for_differentiating_division(x_data, y_data, df, transparency=0.3, uppe
     fig.savefig(buf, format="png")
     buf.seek(0)
 
-    # the title variable from ax.set_title has a weird format, and the part we care about is in between single quotes, so we split it at
     # those single quotes and grab the stuff in between them
-    title = str(title).split("'")[1]
+    title = title.get_text()
     filename = title.replace(" ", "_") # then replace spaces with underscores
 
     # creates a download button with the RAM version of the file and the name and saves it to files as a png
@@ -232,15 +232,14 @@ def plot_for_differentiating_both(x_data, y_data, df, transparency=0.3, experime
     fig.savefig(buf, format="png")
     buf.seek(0)
 
-    # the title variable from ax.set_title has a weird format, and the part we care about is in between single quotes, so we split it at
     # those single quotes and grab the stuff in between them
-    title = str(title).split("'")[1]
+    title = title.get_text()
     filename = title.replace(" ", "_") # then replace spaces with underscores
 
     # creates a download button with the RAM version of the file and the name and saves it to files as a png
     st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
 
-# function to create a plot where are the dots are the same color and shape regardless of experimental or control group
+# function to create a plot where the dots are the same color and shape regardless of experimental or control group
 def plot_without_differentiation(x_data, y_data, transparency = 0.3):
     fig, ax = plt.subplots()
     ax.scatter(x_data, y_data, alpha=transparency)
@@ -258,15 +257,13 @@ def plot_without_differentiation(x_data, y_data, transparency = 0.3):
     fig.savefig(buf, format="png")
     buf.seek(0)
 
-    title = str(title).split("'")[1]
+    title = title.get_text()
     filename = title.replace(" ", "_")
 
     st.download_button(label="Download Plot", data=buf, file_name=filename+".png", icon=":material/download:")
    
-# main function to produce the specific pltos
+# main function to produce the specific plots
 def plot(df):
-    global jitter_select, advanced, diff_select, division_select
-
     # get the clean data
     df = clean_data(df)
 
@@ -323,7 +320,7 @@ if __name__ == '__main__':
     
     # once a file is selected, the rest of the elements are displayed
     if uploaded_file is not None:
-        # sets df as the datafram that holds the data from the uploaded file
+        # sets df as the dataframe that holds the data from the uploaded file
         df = pd.read_excel(uploaded_file)
 
         question_options = ["Q4: Anxiety", "Q5: Attitudes", "Q6: Classroom Environment", "Q7: Confidence", "Q8: Independent Practice", "Q9: Measures of Student Success", "Q10: Motivation", "Q11: Departmental Measures of Success"]
@@ -381,7 +378,7 @@ if __name__ == '__main__':
             shape_options_dictionary = {'square': 's', 'star': '*', 'dot': 'o', 'triangle': '^', 'plus':'+'}
 
             # allows the user to select the color and shape for each subgroup of students
-            # all of these logic branches are to account for all possibe combinations of selections that the user can make
+            # all of these logic branches are to account for all possible combinations of selections that the user can make
             if diff_select == "Yes" and division_select == "Yes":
                 experimental_color = st.selectbox(label="Select the **color** for the **experimental** group:", options=color_options, index=5)
                 control_color = st.selectbox(label="Select the **color** for the **control** group:", options=color_options, index=1)

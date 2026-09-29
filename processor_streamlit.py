@@ -18,31 +18,32 @@ def drop_determiner(data, prefixes) :
     return cols_to_drop
 
 # function that changes the likert scale responses to their corresponding numbers
-def likert_to_num(data, cols, dict) :
-    data[cols] = data[cols].replace(dict)
+def likert_to_num(data, cols, mapping) :
+    data[cols] = data[cols].replace(mapping)
     return data
 
 # function that adds a W to the W number if it is missing
 def add_W(data, col) :
     # setting cell to start at 1 is so that it skips the first cell, which is the question
     for cell in range(1, len(data)) :
-        num = str(data.at[cell, col])
-        # if the number doesn't start with W and is not empty/nan, add a W
-        if not num.startswith("W") and not pd.isna(num) and not num.strip() == "" and not num == "nan":
-            data.at[cell, col] = "W" + num
+        num = str(data.at[cell, col]).strip()
         # if the number starts with lowercase w, replace it with uppercase W
         if num.startswith("w") :
             data.at[cell, col] = "W" + num[1:]
+        # if the number doesn't start with W and is not empty/nan, add a W
+        if not num.startswith("W") and not num.strip() == "" and not num == "nan":
+            data.at[cell, col] = "W" + num
+        
     return data
 
 # function that gets upper and lower division values for each students
 def add_upper_lower_division(data, division_vals) :
-    for cell in data['Q3.1'].fillna(''):
-        if ('30' in cell) or ('31' in cell) or ('33' in cell) or ('34' in cell) or ('35' in cell) or ('44' in cell) or ('45' in cell):
+    for cell in data['Q3.1'].fillna('').astype(str):
+        if any(code in cell for code in ["30", "31", "33", "34", "35", "44", "45"]):
             division = 1
         elif cell == '':
             division = 0
-        elif cell[0].isdigit() == False:
+        elif not cell[0].isdigit():
             division = ''
         else :
             division = 0
@@ -61,10 +62,7 @@ if __name__=="__main__" :
     if uploaded_file is not None:
 
         data = pd.read_excel(uploaded_file)
-    
-        # gets the list of names of all the columns from the file
-        data_cols = list(data.columns)
-
+        
         # to drop columns
 
         # make a list of column names to drop
