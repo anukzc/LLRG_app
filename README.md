@@ -2,6 +2,10 @@
 
 A Streamlit app for the Language Learning Research Group (LLRG) at Western Washington University. It processes, merges, and plots Qualtrics survey data for Jordan Sandoval and Kirsten Drickey's Spanish language learning research.
 
+**Live app:** https://llrgapp.streamlit.app/
+
+**Publication:** [Senior capstone project - Improving Language Learning](https://mabel.wwu.edu/do/deef27e7-cc40-465d-ac82-40c3b31da1d0)
+
 ## Pages
 
 The app has three pages:
